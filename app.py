@@ -1,17 +1,21 @@
 import os
 import socket
-
 from datetime import datetime
+
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect
+from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
 app = Flask(__name__)
+app.config['CACHE_DEFAULT_TIMEOUT'] = int(os.environ.get('CACHE_DEFAULT_TIMEOUT', '60'))
+app.config['CACHE_MEMCACHED_SERVERS'] = os.environ.get('CACHE_MEMCACHED_SERVERS')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['NOTES_TO_DISPLAY'] = 20
 db = SQLAlchemy(app)
 
 
@@ -26,12 +30,38 @@ with app.app_context():
     db.create_all()
     db.session.commit()
 
+cache = Cache()
+if app.config['CACHE_MEMCACHED_SERVERS']:
+    cache_servers = app.config['CACHE_MEMCACHED_SERVERS'].split(',')
+    cache_config = {"CACHE_TYPE": "memcached",
+                    "CACHE_MEMCACHED_SERVERS": cache_servers
+                    }
+    cache.init_app(app, cache_config)
+
 
 @app.route('/', methods=['GET'])
+# We can't cache the whole view:
+# @cache.cached(timeout=50, key_prefix='all_comments')
 def index():
     server_name = socket.gethostname()
-    notes = Note.query.order_by(Note.timestamp.desc()).limit(20).all()
-    return render_template('index.html', notes=notes, server_name=server_name)
+    notes_to_display = app.config['NOTES_TO_DISPLAY']
+    cache_key = f"last_{notes_to_display}_notes"
+    notes = None
+    cache_configured = True if "cache" in app.extensions else False
+    if cache_configured:
+        cached_results = cache.get(cache_key) if cache_configured else None
+        if cached_results:
+            notes = cached_results
+
+    if notes is None:
+        notes = Note.query.order_by(Note.timestamp.desc()).limit(notes_to_display).all()
+        if cache_configured:
+            cache.set(cache_key, notes, timeout=app.config['CACHE_DEFAULT_TIMEOUT'])
+
+    return render_template('index.html',
+                           notes=notes,
+                           server_name=server_name,
+                           results_cached=True if cached_results else False)
 
 
 @app.route('/new', methods=['POST'])
@@ -42,6 +72,12 @@ def new():
         new_note = Note(content=content, server_name=server_name)
         db.session.add(new_note)
         db.session.commit()
+
+        notes_to_display = app.config['NOTES_TO_DISPLAY']
+        cache_key = f"last_{notes_to_display}_notes"
+        if "cache" in app.extensions:
+            cache.delete(cache_key)
+
     return redirect("/", code=302)
 
 
