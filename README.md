@@ -30,5 +30,15 @@ sudo cp /var/www/NotesApp/static/etc/systemd/system/notes-app.service /etc/syste
 sudo systemctl daemon-reload && sudo systemctl enable notes-app && sudo systemctl restart notes-app
 sudo journalctl -u notes-app
 ```
-
-
+7. Install apache2, disable its default site and enable required modules:
+```angular2html
+sudo a2dissite 000-default.conf
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+```
+8. Copy apache2 config to its location and enable it:
+```
+sudo cp /var/www/NotesApp/static/etc/apache2/sites-available/NotesApp.conf /etc/apache2/sites-available/
+sudo a2ensite NotesApp.conf
+sudo systemctl reload apache2
+```
