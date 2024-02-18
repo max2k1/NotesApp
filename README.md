@@ -2,13 +2,20 @@
 Simple app for demonstration purposes
 
 ## Installation:
-1. `git clone` this repo into /var/www/NotesApp 
-2. Fix permissions: `chmod 777 /var/www/NotesApp` or `chown www-data /var/www/NotesApp` 
-3. Create `/var/www/NotesApp/.env` file with something relevant, ex:
+1. 
+```
+sudo mkdir -p /var/www/NotesApp && \
+sudo chmod 777 /var/www/NotesApp && \
+git clone https://github.com/max2k1/NotesApp.git /var/www/NotesApp && \
+echo "Init completed"
+``` 
+2. Create `/var/www/NotesApp/.env` file with something relevant, ex:
 ```angular2html
+cat <<EOF > /var/www/NotesApp/.env
 CACHE_MEMCACHED_SERVERS="localhost:11211"
-DATABASE_URL='postgresql://notes_app:SecretPass@localhost/notes_db'
-GUNICORN_ADDR=0.0.0.0
+# DATABASE_URL='postgresql://notes_app:SecretPass@localhost/notes_db'
+GUNICORN_BIND=127.0.0.1:8000
+EOF
 ```
 4. Install all the dependencies:
 ```angular2html
@@ -26,9 +33,9 @@ EOF
 ```
 6. Copy systemd unit file into its location and start the service:
 ```angular2html
-sudo cp /var/www/NotesApp/system_configs/etc/systemd/system/notes-app.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable notes-app && sudo systemctl restart notes-app
-sudo journalctl -u notes-app
+sudo cp /var/www/NotesApp/system_configs/etc/systemd/system/notes-app.service /etc/systemd/system/ && \
+sudo systemctl daemon-reload && sudo systemctl enable notes-app && sudo systemctl restart notes-app && \
+sudo systemctl status notes-app
 ```
 7. Install apache2, disable its default site and enable required modules:
 ```angular2html
@@ -38,7 +45,8 @@ sudo a2enmod proxy_http
 ```
 8. Copy apache2 config to its location and enable it:
 ```
-sudo cp /var/www/NotesApp/system_configs/etc/apache2/sites-available/NotesApp.conf /etc/apache2/sites-available/
-sudo a2ensite NotesApp.conf
-sudo systemctl reload apache2
+sudo cp /var/www/NotesApp/system_configs/etc/apache2/sites-available/NotesApp.conf /etc/apache2/sites-available/ && \
+sudo a2ensite NotesApp.conf && \
+sudo systemctl restart apache2 && \
+echo Done
 ```
