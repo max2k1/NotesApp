@@ -48,12 +48,10 @@ def index():
     cache_key = f"last_{notes_to_display}_notes"
     notes = None
     cache_configured = True if "cache" in app.extensions else False
-    if cache_configured:
-        cached_results = cache.get(cache_key) if cache_configured else None
-        if cached_results:
-            notes = cached_results
-
-    if notes is None:
+    cached_results = cache.get(cache_key) if cache_configured else None
+    if cached_results:
+        notes = cached_results
+    else:
         notes = Note.query.order_by(Note.timestamp.desc()).limit(notes_to_display).all()
         if cache_configured:
             cache.set(cache_key, notes, timeout=app.config['CACHE_DEFAULT_TIMEOUT'])
