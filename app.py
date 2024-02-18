@@ -37,6 +37,7 @@ if app.config['CACHE_MEMCACHED_SERVERS']:
                     "CACHE_MEMCACHED_SERVERS": cache_servers
                     }
     cache.init_app(app, cache_config)
+    cache.clear()
 
 
 @app.route('/', methods=['GET'])

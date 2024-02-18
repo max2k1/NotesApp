@@ -1,0 +1,18 @@
+[Unit]
+Description=Notes application
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/NotesApp
+Environment=DATABASE_URL=sqlite:///notes.db
+Environment=FLASK_CONFIG=production
+Environment=GUNICORN_ADDR=localhost
+Environment=GUNICORN_PORT=8000
+Environment=GUNICORN_WORKERS=2
+EnvironmentFile=/var/www/NotesApp/.env
+ExecStart=/var/www/NotesApp/.venv/bin/gunicorn -b "${GUNICORN_ADDR}:${GUNICORN_PORT}" -w ${GUNICORN_WORKERS} app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
