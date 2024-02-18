@@ -26,7 +26,7 @@ EOF
 ```
 6. Copy systemd unit file into its location and start the service:
 ```angular2html
-sudo cp /var/www/NotesApp/static/etc/systemd/system/notes-app.service /etc/systemd/system/
+sudo cp /var/www/NotesApp/system_configs/etc/systemd/system/notes-app.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable notes-app && sudo systemctl restart notes-app
 sudo journalctl -u notes-app
 ```
@@ -38,7 +38,7 @@ sudo a2enmod proxy_http
 ```
 8. Copy apache2 config to its location and enable it:
 ```
-sudo cp /var/www/NotesApp/static/etc/apache2/sites-available/NotesApp.conf /etc/apache2/sites-available/
+sudo cp /var/www/NotesApp/system_configs/etc/apache2/sites-available/NotesApp.conf /etc/apache2/sites-available/
 sudo a2ensite NotesApp.conf
 sudo systemctl reload apache2
 ```
