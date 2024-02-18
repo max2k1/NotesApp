@@ -19,13 +19,13 @@
 
 <div class="container my-5">
     <h2>Recent Notes{{ ' (from cache)' if results_cached else '' }}</h2>
-    <ul>
+    <ol>
         {% for note in notes %}
             <li>{{ note.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} on {{ note.server_name }}<br/>
                 <pre>{{ note.content }}</pre>
             </li>
         {% endfor %}
-    </ul>
+    </ol>
 </div>
 </body>
 </html>

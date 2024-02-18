@@ -13,9 +13,9 @@ load_dotenv(os.path.join(basedir, '.env'))
 app = Flask(__name__)
 app.config['CACHE_DEFAULT_TIMEOUT'] = int(os.environ.get('CACHE_DEFAULT_TIMEOUT', '2'))
 app.config['CACHE_MEMCACHED_SERVERS'] = os.environ.get('CACHE_MEMCACHED_SERVERS')
+app.config['NOTES_TO_DISPLAY'] = int(os.environ.get('NOTES_TO_DISPLAY', '20'))
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['NOTES_TO_DISPLAY'] = 20
 db = SQLAlchemy(app)
 
 
@@ -78,6 +78,18 @@ def new():
             cache.delete(cache_key)
 
     return redirect("/", code=302)
+
+
+@app.cli.command("seed-db")
+def seed_db():
+    db.drop_all()
+    db.create_all()
+    server_name = socket.gethostname()
+    for i in range(10000):
+        new_note = Note(content=f"New note #{i + 1}", server_name=server_name)
+        db.session.add(new_note)
+    db.session.commit()
+    print("Database initialized")
 
 
 if __name__ == '__main__':

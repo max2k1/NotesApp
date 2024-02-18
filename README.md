@@ -50,3 +50,10 @@ sudo a2ensite NotesApp.conf && \
 sudo systemctl restart apache2 && \
 echo Done
 ```
+9. You can also preseed your database with 10K notes:
+```angular2html
+pushd /var/www/NotesApp/ && \
+flask seed-db && \
+popd && \
+echo "Seeding completed"
+```
