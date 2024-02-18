@@ -4,15 +4,31 @@ After=network.target
 
 [Service]
 User=www-data
+Group=www-data
+RuntimeDirectory=NotesApp
+LogsDirectory=NotesApp
+StateDirectory=NotesApp
 WorkingDirectory=/var/www/NotesApp
-Environment=DATABASE_URL=sqlite:///notes.db
+Environment=DATABASE_URL=sqlite:////var/lib/NotesApp/notes.db
 Environment=FLASK_CONFIG=production
-Environment=GUNICORN_ADDR=localhost
-Environment=GUNICORN_PORT=8000
-Environment=GUNICORN_WORKERS=2
+Environment=GUNICORN_BIND=localhost:8000
+Environment=GUNICORN_WORKERS=3
+Environment=PATH=/var/www/NotesApp/.venv/bin
 EnvironmentFile=/var/www/NotesApp/.env
-ExecStart=/var/www/NotesApp/.venv/bin/gunicorn -b "${GUNICORN_ADDR}:${GUNICORN_PORT}" -w ${GUNICORN_WORKERS} app:app
-Restart=always
+ExecStart=/var/www/NotesApp/.venv/bin/gunicorn \
+        --chdir /var/www/NotesApp \
+        app:app \
+        --workers ${GUNICORN_WORKERS} \
+        --bind ${GUNICORN_BIND} \
+        --reload \
+        --access-logfile /var/log/NotesApp/gunicorn_access.log \
+        --error-logfile /var/log/NotesApp/gunicorn_error.log \
+        --capture-output \
+        --enable-stdio-inheritance
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=on-abort
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
