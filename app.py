@@ -111,7 +111,7 @@ def init_env() -> None:
         f.write(f"DATABASE_USERNAME={username}\n")
         f.write(f"DATABASE_PASSWORD={password}\n")
         f.write(f"DATABASE_NAME={db_name}\n")
-        f.write(f"# DATABASE_URL=\"postgresql://{username}:{password}@{db_host}/{db_host}\"\n")
+        f.write(f"# DATABASE_URL=\"postgresql://{username}:{password}@{db_host}/{db_name}\"\n")
         f.write("# CACHE_MEMCACHED_SERVERS=localhost:11211\n")
     print(f"{env_file} file inited")
 
