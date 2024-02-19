@@ -9,19 +9,20 @@ sudo chmod 777 /var/www/NotesApp && \
 git clone https://github.com/max2k1/NotesApp.git /var/www/NotesApp && \
 echo "Init completed"
 ``` 
-2. Create `/var/www/NotesApp/.env` with some defaults:
+2. Install python3-venv all the dependencies:
+```angular2html
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+```
+3. Create `/var/www/NotesApp/.env` with some defaults:
 ```angular2html
 cd /var/www/NotesApp && \
 flask init-env 
 ```
-4. Install all the dependencies:
-```angular2html
-python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
-```
-5. Install postgresql and set up the database. Generate pgsql initialization script:
+4. Install postgresql and set up the database. Generate pgsql initialization script:
 ```angular2h
 flask init-pgsql
 ```
+5. Don't forget to fix `pg_hba.conf` to add network permissions
 6. Copy systemd unit file into its location and start the service:
 ```angular2html
 sudo cp /var/www/NotesApp/system_configs/etc/systemd/system/notes-app.service /etc/systemd/system/ && \
@@ -48,4 +49,14 @@ flask recreate-db && \
 flask seed-db && \
 popd && \
 echo "Seeding completed"
+```
+10. Install haproxy and use the supplied config. Update ip addresses.
+```
+sudo cp /var/www/NotesApp/system_configs/etc/haproxy/haproxy.cfg /etc/haproxy/ && \
+sudo systemct restart haproxy && \
+echo "Haproxy ready!" 
+```
+11. Make some testing:
+```angular2html
+wrk -c 20 -t 2 -d 10s http://server03/
 ```
