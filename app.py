@@ -1,3 +1,4 @@
+""""Module provide NotesApp service functionality"""
 import os
 import secrets
 import socket
@@ -24,7 +25,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
+# pylint: disable=too-few-public-methods
 class Note(db.Model):
+    """Note model"""
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -46,20 +49,21 @@ if app.config['CACHE_MEMCACHED_SERVERS']:
 
 
 def hostname() -> str:
-    if app.config['STATIC_HOSTNAME']:
-        return app.config['STATIC_HOSTNAME']
-    return socket.gethostname()
+    """Return current host's name if not overridden"""
+    res: Optional[str] = app.config['STATIC_HOSTNAME']
+    return res if res else socket.gethostname()
 
 
 @app.route('/', methods=['GET'])
 # We can't cache the whole view:
 # @cache.cached(timeout=50, key_prefix='all_comments')
 def index() -> str:
+    """Return the main page"""
     server_name: str = hostname()
     notes_to_display: int = app.config['NOTES_TO_DISPLAY']
     cache_key = f"last_{notes_to_display}_notes"
     notes: Optional[Note] = None
-    cache_configured = True if "cache" in app.extensions else False
+    cache_configured: bool = "cache" in app.extensions
     cached_results: Optional[Any] = cache.get(cache_key) if cache_configured else None
     if cached_results:
         notes = cached_results
@@ -71,11 +75,12 @@ def index() -> str:
     return render_template('index.html',
                            notes=notes,
                            server_name=server_name,
-                           results_cached=True if cached_results else False)
+                           results_cached=cached_results is not None)
 
 
 @app.route('/new', methods=['POST'])
 def new() -> Response:
+    """Creates a new note"""
     server_name: str = hostname()
     content: str = request.form['content']
     if content:
@@ -93,6 +98,7 @@ def new() -> Response:
 
 @app.cli.command("init-env", short_help="Initialize the .env file with some default values")
 def init_env() -> None:
+    """Initialize the .env file with some default"""
     if os.path.isfile(env_file):
         print(f"File {env_file} already exists")
         return
@@ -100,7 +106,7 @@ def init_env() -> None:
     password: str = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(32))
     db_name = "notes_db"
     db_host = "localhost"
-    with open(env_file, "w") as f:
+    with open(env_file, "w", encoding="utf-8") as f:
         f.write(f"DATABASE_USERNAME={username}\n")
         f.write(f"DATABASE_PASSWORD={password}\n")
         f.write(f"DATABASE_NAME={db_name}\n")
@@ -111,6 +117,7 @@ def init_env() -> None:
 
 @app.cli.command("init-pgsql", short_help="Create SQL script to initialize PostgreSQL database")
 def init_pgsql() -> None:
+    """Create PostgreSQL initialization SQL-script"""
     if not os.path.isfile(env_file):
         print(f"File {env_file} should exist")
         return
@@ -127,6 +134,7 @@ def init_pgsql() -> None:
 
 @app.cli.command("recreate-db", short_help="Drop everything from database")
 def recreate_db() -> None:
+    """Drop everything from DB"""
     db.drop_all()
     db.create_all()
     db.session.commit()
@@ -135,6 +143,7 @@ def recreate_db() -> None:
 
 @app.cli.command("seed-db", short_help="Generate some random notes")
 def seed_db() -> None:
+    """Put some data in the DB"""
     db.create_all()
     server_name = hostname()
     for i in range(10000):
