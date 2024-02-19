@@ -62,7 +62,8 @@ def index() -> str:
     server_name: str = hostname()
     notes_to_display: int = app.config['NOTES_TO_DISPLAY']
     cache_key = f"last_{notes_to_display}_notes"
-    notes: Optional[Note] = None
+
+    notes: Optional[Note]
     cache_configured: bool = "cache" in app.extensions
     cached_results: Optional[Any] = cache.get(cache_key) if cache_configured else None
     if cached_results:
