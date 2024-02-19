@@ -22,7 +22,7 @@ flask init-env
 ```angular2h
 flask init-pgsql
 ```
-5. Don't forget to fix `pg_hba.conf` to add network permissions
+5. Don't forget to fix `postgresql.conf` to listen on `*` and pg_hba.conf` to add network permissions
 6. Copy systemd unit file into its location and start the service:
 ```angular2html
 sudo cp /var/www/NotesApp/system_configs/etc/systemd/system/notes-app.service /etc/systemd/system/ && \
