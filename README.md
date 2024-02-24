@@ -2,7 +2,7 @@
 Simple app for demonstration purposes
 
 ## Installation:
-1. 
+1. Create working directory and clone there the repository:
 ```
 sudo mkdir -p /var/www/NotesApp && \
 sudo chmod 777 /var/www/NotesApp && \
