@@ -58,5 +58,5 @@ echo "Haproxy ready!"
 ```
 11. Make some testing:
 ```angular2html
-wrk -c 20 -t 2 -d 10s http://server03/
+wrk -c 20 -t 2 -d 60s http://server03/
 ```
